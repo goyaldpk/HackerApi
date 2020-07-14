@@ -38,11 +38,8 @@ public class HttpUtility {
         HttpResponse<String> response = null;
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException e) {
-            log.error("IO exception occurred while getting new Stories");
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            log.error("Interrupted exception occurred while getting new Stories");
+        } catch (IOException | InterruptedException e) {
+            log.error("exception occurred while getting new Stories");
             e.printStackTrace();
         }
         List<String> storyIds = new ArrayList<>();
@@ -71,11 +68,16 @@ public class HttpUtility {
         return null;
     }
 
-    public static int getUserAge(String by) throws JsonProcessingException, ExecutionException, InterruptedException {
+    public static int getUserAge(String by) {
         if(by!=null && !by.isEmpty()) {
             CompletableFuture<HttpResponse<String>> userString = getItem(Constants.USER_URL + by + ".json");
             ObjectMapper objectMapper = new ObjectMapper();
-            User user = objectMapper.readValue(userString.get().body(), User.class);
+            User user = null;
+            try {
+                user = objectMapper.readValue(userString.get().body(), User.class);
+            } catch (JsonProcessingException | InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
             Period period = new Period(Instant.ofEpochSecond(user.getCreated()), Instant.now());
             log.info("the age os the user is"+period.getYears());
             return period.getYears();

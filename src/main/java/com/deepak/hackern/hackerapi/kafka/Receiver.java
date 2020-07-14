@@ -34,8 +34,7 @@ public class Receiver {
   private CommentRepo commentRepo;
 
   @KafkaListener(topics = "${kafka.default-topic}")
-  public void receive(KafkaProducerMessage kafkaProducerMessage) throws
-          JsonProcessingException, ExecutionException, InterruptedException {
+  public void receive(KafkaProducerMessage kafkaProducerMessage) {
     log.debug("received Kafka Producer Message='{}'", kafkaProducerMessage.toString());
     if(kafkaProducerMessage!=null && kafkaProducerMessage.getKids()!=null && kafkaProducerMessage.getKids().length!=0) {
       List<CompletableFuture<String>> rawCommentFuture = HttpUtility
@@ -65,13 +64,20 @@ public class Receiver {
     return comment;
   }
 
-  private List<RawComment> getTopTenCommentsForAStory(List<String> rawCommentStrings) throws JsonProcessingException {
+  private List<RawComment> getTopTenCommentsForAStory(List<String> rawCommentStrings) {
     ObjectMapper mapper = new ObjectMapper();
     List<RawComment> rawCommentList =  new ArrayList<>();
     for(String str : rawCommentStrings) {
-      RawComment rawComment = mapper.readValue(str, RawComment.class);
-      if(rawComment != null && rawComment.getKids()==null) {
-        rawComment.setKids(new String[0]);
+      RawComment rawComment = null;
+      try {
+        rawComment = mapper.readValue(str, RawComment.class);
+      } catch (JsonProcessingException e) {
+        log.error("exception in parsing rawComment");
+        e.printStackTrace();
+      }
+      if(rawComment != null){
+        if(rawComment.getKids()==null)
+          rawComment.setKids(new String[0]);
         rawCommentList.add(rawComment);
       }
     }
