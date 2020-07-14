@@ -31,6 +31,6 @@ public class HackerApiController {
 
     @GetMapping(value = "/past-stories", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Story> getPastStories() {
-        return null;
+        return dataBaseService.getAllPastStories();
     }
 }

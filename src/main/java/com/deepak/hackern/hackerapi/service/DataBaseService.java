@@ -26,4 +26,8 @@ public class DataBaseService {
     public List<Comment> getCommentsForAStory(Long storyId) {
         return commentRepo.findByStoryId(storyId);
     }
+
+    public List<Story> getAllPastStories() {
+        return storyRepo.findAll();
+    }
 }
